@@ -1,4 +1,6 @@
 import os
+import picture.color as color
+import picture.picture_class as picture_class
 
 """
 屏幕模块，包含GameScreen和GameFrame类。
@@ -36,6 +38,10 @@ class GameScreen:
         print("\\", "-" * self.width, "/", sep="")
         self.have_new_frame = False
 
+    def qiuck_refresh(self, new_frame):
+        self.update_frame(new_frame)
+        self.refresh()
+
 
 class GameFrame:
     def __init__(self, InitConfig):
@@ -43,17 +49,21 @@ class GameFrame:
         self.height = InitConfig.height
         self.picture = [[" " for _ in range(self.width)] for _ in range(self.height)]
 
-    def draw(self, position, content):
+    def draw(self, position, content: picture_class.Picture):
         x, y = position
-        if content["sharp"] is None:
-            # 添加无sharp方法，以便于绘制非矩阵文本
+        if content.length == 0 :
             return
-        i, j = content["sharp"]
-
-        for line in range(i):
-            for col in range(j):
-                if 0 <= x + line < self.height and 0 <= y + col < self.width:
-                    self.picture[x + line][y + col] = content["Content"][line][col]
-                else:
-                    # 超出边界时抛出异常
-                    raise ValueError("Content exceeds frame boundaries.")
+        
+        for i in range(content.length):
+            for j in range(len(content.layers[i].layer)):
+                for k in range(len(content.layers[i].layer[j])):
+                    if 0 <= y + j < self.height and 0 <= x + k < self.width:
+                        if content.layers[i].layer[j][k] is None:
+                            self.picture[y + j][x + k] == " "
+                            continue
+                        elif content.layers[i].layer[j][k] is " ":
+                            continue
+                        self.picture[y + j][x + k] = color.set_color(content.layers[i].color, content.layers[i].layer[j][k])
+                    else:
+                         raise ValueError("绘制内容超出屏幕范围")
+                        
