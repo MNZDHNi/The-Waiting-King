@@ -1,5 +1,6 @@
-from ..picture_class import picture_class
+from ..picture_class import Picture
 
-class map_class(picture_class):
-    def __init__(self, InitConfig):
-        super().__init__(InitConfig)
+
+class Map(Picture):
+    def __init__(self) -> None:
+        super().__init__()

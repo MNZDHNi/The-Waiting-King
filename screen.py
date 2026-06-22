@@ -1,69 +1,76 @@
 import os
+from typing import TYPE_CHECKING, Optional
+
 import picture.color as color
-import picture.picture_class as picture_class
+from picture.picture_class import Picture, Layer
 
-"""
-屏幕模块，包含GameScreen和GameFrame类。
-GameScreen负责管理屏幕的显示和刷新，GameFrame负责管理当前帧的内容。
-"""
+if TYPE_CHECKING:
+    from config import InitConfig
+
+
 class GameScreen:
-    def __init__(self, InitConfig):
-        self.width = InitConfig.width
-        self.height = InitConfig.height
-        self.have_new_frame = False
+    """屏幕模块，负责管理屏幕的显示和刷新。"""
 
-    def clear(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
-    
-    def update_frame(self, new_frame):
+    def __init__(self, config: "InitConfig") -> None:
+        self.width: int = config.width
+        self.height: int = config.height
+        self._frame: Optional["GameFrame"] = None
+
+    def clear(self) -> None:
+        os.system("cls" if os.name == "nt" else "clear")
+
+    def update_frame(self, new_frame: Optional["GameFrame"]) -> None:
         if new_frame is not None:
-            self.have_new_frame = new_frame
+            self._frame = new_frame
 
-    def refresh(self):
-        if not self.have_new_frame:
+    def refresh(self) -> None:
+        if self._frame is None:
             return
-        
+
         self.clear()
         print("/", "-" * self.width, "\\", sep="")
 
         for i in range(self.height):
             print("|", end="")
             for j in range(self.width):
-                if self.have_new_frame is not None:
-                    print(self.have_new_frame.picture[i][j], end="")
-                else:
-                    print(" ", end="")
+                print(self._frame.picture[i][j], end="")
             print("|")
 
         print("\\", "-" * self.width, "/", sep="")
-        self.have_new_frame = False
+        self._frame = None
 
-    def qiuck_refresh(self, new_frame):
+    def quick_refresh(self, new_frame: "GameFrame") -> None:
         self.update_frame(new_frame)
         self.refresh()
 
 
 class GameFrame:
-    def __init__(self, InitConfig):
-        self.width = InitConfig.width
-        self.height = InitConfig.height
-        self.picture = [[" " for _ in range(self.width)] for _ in range(self.height)]
+    """帧模块，负责管理当前帧的内容。"""
 
-    def draw(self, position, content: picture_class.Picture):
+    def __init__(self, config: "InitConfig") -> None:
+        self.width: int = config.width
+        self.height: int = config.height
+        self.picture: list[list[str]] = [
+            [" " for _ in range(self.width)] for _ in range(self.height)
+        ]
+
+    def draw(self, position: tuple[int, int], content: Picture) -> None:
         x, y = position
-        if content.length == 0 :
+        if content.length == 0:
             return
-        
-        for i in range(content.length):
-            for j in range(len(content.layers[i].layer)):
-                for k in range(len(content.layers[i].layer[j])):
-                    if 0 <= y + j < self.height and 0 <= x + k < self.width:
-                        if content.layers[i].layer[j][k] is None:
-                            self.picture[y + j][x + k] == " "
-                            continue
-                        elif content.layers[i].layer[j][k] is " ":
-                            continue
-                        self.picture[y + j][x + k] = color.set_color(content.layers[i].color, content.layers[i].layer[j][k])
-                    else:
-                         raise ValueError("绘制内容超出屏幕范围")
+
+        for li in range(content.length):
+            layer: Layer = content.layers[li]
+            for j in range(len(layer.layer)):
+                for k in range(len(layer.layer[j])):
+                    if not (0 <= y + j < self.height and 0 <= x + k < self.width):
+                        raise ValueError("绘制内容超出屏幕范围")
+                    if layer.layer[j][k] is None:
+                        self.picture[y + j][x + k] = " "
+                        continue
+                    if layer.layer[j][k] == " ":
+                        continue
+                    self.picture[y + j][x + k] = color.set_color(
+                        layer.color, layer.layer[j][k]
+                    )
                         

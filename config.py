@@ -1,4 +1,7 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class InitConfig:
-    def __init__(self, width=100, height=30):
-        self.width = width
-        self.height = height
+    width: int = 100
+    height: int = 30

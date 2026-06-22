@@ -1,3 +1,2 @@
-def GetKey():
-    key = input("Press Enter to continue...")
-    return key
+def get_key() -> str:
+    return input("Press Enter to continue...")
