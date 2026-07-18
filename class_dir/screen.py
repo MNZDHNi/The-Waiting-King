@@ -1,8 +1,8 @@
 import os
 from typing import TYPE_CHECKING, Optional
 
-import picture.color as color
-from picture.picture_class import Picture, Layer
+from .color import Color, set_color
+from .picture_class import Picture, Layer
 
 if TYPE_CHECKING:
     from config import InitConfig
@@ -12,9 +12,11 @@ class GameScreen:
     """屏幕模块，负责管理屏幕的显示和刷新。"""
 
     def __init__(self, config: "InitConfig") -> None:
+        self.config: "InitConfig" = config
         self.width: int = config.width
         self.height: int = config.height
         self._frame: Optional["GameFrame"] = None
+        self.flag: bool = False
 
     def clear(self) -> None:
         os.system("cls" if os.name == "nt" else "clear")
@@ -23,25 +25,39 @@ class GameScreen:
         if new_frame is not None:
             self._frame = new_frame
 
-    def refresh(self) -> None:
-        if self._frame is None:
+    def refresh(self, mode: int = 0, empty: bool = False) -> None:
+        if empty:
+            self._frame = GameFrame(self.config)
+        elif self._frame is None:
             return
 
-        self.clear()
-        print("/", "-" * self.width, "\\", sep="")
+        if mode == 0:
+            if not self.flag:
+                self.flag = True
+                self.clear()
+            print("\033[H", end="")  # 将光标移动到屏幕左上角
+        elif mode == 1:
+            self.clear()
+        else:
+            raise ValueError("Invalid refresh mode. Use 0 or 1.")
+
+        print("┌", "─" * self.width, "┐", sep="")
 
         for i in range(self.height):
-            print("|", end="")
+            print("│", end="")
             for j in range(self.width):
                 print(self._frame.picture[i][j], end="")
-            print("|")
+            print("│")
 
-        print("\\", "-" * self.width, "/", sep="")
+        print("└", "─" * self.width, "┘", sep="")
         self._frame = None
 
     def quick_refresh(self, new_frame: "GameFrame") -> None:
         self.update_frame(new_frame)
         self.refresh()
+
+    def empty_refresh(self) -> None:
+        self.refresh(empty=True)
 
 
 class GameFrame:
@@ -70,7 +86,11 @@ class GameFrame:
                         continue
                     if layer.layer[j][k] == " ":
                         continue
-                    self.picture[y + j][x + k] = color.set_color(
+                    self.picture[y + j][x + k] = set_color(
                         layer.color, layer.layer[j][k]
                     )
                         
+
+def get_input() -> str:
+    """获取用户输入的按键"""
+    return input("please input a key: ")

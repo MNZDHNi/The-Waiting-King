@@ -8,7 +8,7 @@
 
 ---
 
-## ✅ 已完成
+## MAP
 
 ### 颜色 & 图层系统
 
@@ -34,10 +34,6 @@
 - [x] **删除死代码** — `Picture.sharp`、`init_sharp()`、空文件 `creat_map.py`
 - [x] **`config.py` 改用 dataclass** — `InitConfig` 使用 `@dataclass` 简写
 - [x] **修正命名字典** — `GetKey()` → `get_key()` 符合 PEP 8
-
----
-
-## 📋 待办
 
 ### 框架优化
 
